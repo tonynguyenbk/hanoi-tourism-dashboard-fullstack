@@ -148,13 +148,13 @@ function Visitors() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* So sánh cùng kỳ năm trước */}
         <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-          <h3 className="font-semibold text-gray-800 mb-4">So sánh cùng kỳ năm trước</h3>
+          <h3 className="font-semibold text-gray-800 mb-4">So sánh cùng kỳ {VISITOR_KPI.year - 1}–{VISITOR_KPI.year}</h3>
           <LineChart
             data={VISITOR_COMPARISON}
             xKey="month"
             lines={[
-              { key: 'Năm nay',   name: 'Năm 2025', color: '#2E86C1' },
-              { key: 'Năm trước', name: 'Năm 2024', color: '#BDC3C7' },
+              { key: 'Năm nay',   name: `Năm ${VISITOR_KPI.year}`,       color: '#2E86C1' },
+              { key: 'Năm trước', name: `Năm ${VISITOR_KPI.year - 1}`,   color: '#BDC3C7' },
             ]}
             height={250}
             formatter={(v) => formatVisitors(v)}
@@ -170,7 +170,7 @@ function Visitors() {
 
       {/* Bảng chi tiết theo tháng */}
       <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-        <h3 className="font-semibold text-gray-800 mb-4">Số liệu chi tiết theo tháng — 2025</h3>
+        <h3 className="font-semibold text-gray-800 mb-4">Số liệu chi tiết theo tháng — {VISITOR_KPI.year}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -179,12 +179,12 @@ function Visitors() {
                 <th className="pb-2 font-medium text-right">Khách nội địa</th>
                 <th className="pb-2 font-medium text-right">Khách quốc tế</th>
                 <th className="pb-2 font-medium text-right">Tổng cộng</th>
-                <th className="pb-2 font-medium text-right">So với 2024</th>
+                <th className="pb-2 font-medium text-right">So với {VISITOR_KPI.year - 1}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {VISITOR_DATA_2025.map((row, i) => {
-                const prev = VISITOR_DATA_2024[i]['Tổng']
+              {VISITOR_DATA_2026.map((row, i) => {
+                const prev = VISITOR_DATA_2025[i]['Tổng']
                 const growth = (((row['Tổng'] - prev) / prev) * 100).toFixed(1)
                 return (
                   <tr key={row.month} className="hover:bg-gray-50">
@@ -201,7 +201,7 @@ function Visitors() {
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-gray-300 font-bold bg-gray-50">
-                <td className="py-2.5">Cả năm</td>
+                <td className="py-2.5">Q1 {VISITOR_KPI.year} (T1–T3)</td>
                 <td className="py-2.5 text-right">{VISITOR_KPI.domesticVisitors.toLocaleString('vi-VN')}</td>
                 <td className="py-2.5 text-right">{VISITOR_KPI.internationalVisitors.toLocaleString('vi-VN')}</td>
                 <td className="py-2.5 text-right text-primary" style={{ color: '#2E86C1' }}>{VISITOR_KPI.totalVisitors.toLocaleString('vi-VN')}</td>
