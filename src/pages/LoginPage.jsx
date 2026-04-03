@@ -40,10 +40,8 @@ function LoginPage() {
     setLoading(true)
     setError('')
 
-    // Giả lập độ trễ network nhỏ để UX tự nhiên hơn
-    await new Promise((r) => setTimeout(r, 500))
-
-    const result = login(username, password)
+    // login() gọi Supabase Auth — có độ trễ network thật
+    const result = await login(username, password)
     setLoading(false)
 
     if (result.success) {

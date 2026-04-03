@@ -1,51 +1,20 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { supabase } from '../lib/supabase'
 
 /**
- * AuthContext — Quản lý trạng thái đăng nhập toàn app
- * Dữ liệu lưu trong localStorage để giữ session khi reload trang
+ * AuthContext — Quản lý trạng thái đăng nhập qua Supabase Auth
+ * JWT token được Supabase quản lý tự động (lưu localStorage)
  */
 
-// ─── Danh sách tài khoản (mô phỏng, không cần backend) ───────────────────────
-const USERS = [
-  {
-    id:       1,
-    username: 'admin',
-    password: 'admin123',
-    role:     'admin',        // Toàn quyền: xem + xuất báo cáo + tiếp nhận phản ánh
-    name:     'Nguyễn Văn A',
-    title:    'Quản trị hệ thống',
-    avatar:   'QT',
-  },
-  {
-    id:       2,
-    username: 'giamdoc',
-    password: 'giamdoc123',
-    role:     'admin',
-    name:     'Trần Thị B',
-    title:    'Giám đốc Sở Du lịch',
-    avatar:   'GĐ',
-  },
-  {
-    id:       3,
-    username: 'canbo',
-    password: 'canbo123',
-    role:     'staff',        // Cán bộ: xem + tiếp nhận phản ánh, không xuất báo cáo
-    name:     'Lê Văn C',
-    title:    'Cán bộ chuyên môn',
-    avatar:   'CB',
-  },
-  {
-    id:       4,
-    username: 'viewer',
-    password: 'viewer123',
-    role:     'viewer',       // Chỉ xem, không có quyền gì thêm
-    name:     'Phạm Thị D',
-    title:    'Khách xem',
-    avatar:   'KX',
-  },
-]
+// ─── Map username → email (để giữ UI đăng nhập bằng username) ────────────────
+const USERNAME_TO_EMAIL = {
+  admin:   'admin@hanoidulich.vn',
+  giamdoc: 'giamdoc@hanoidulich.vn',
+  canbo:   'canbo@hanoidulich.vn',
+  viewer:  'viewer@hanoidulich.vn',
+}
 
-// ─── Quyền hạn theo role ──────────────────────────────────────────────────────
+// ─── Quyền hạn theo role (giống Level 1) ─────────────────────────────────────
 export const PERMISSIONS = {
   admin: {
     canExportReport:   true,
@@ -68,61 +37,96 @@ export const PERMISSIONS = {
 const AuthContext = createContext(null)
 
 /**
- * Đọc user đã lưu từ localStorage (nếu có)
- */
-function getStoredUser() {
-  try {
-    const raw = localStorage.getItem('hanoiDashboardUser')
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
-/**
  * AuthProvider — Bọc toàn bộ app để cung cấp context auth
  */
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(getStoredUser)
+  // user = { id, email, username, name, title, role, avatar } hoặc null
+  const [user,    setUser]    = useState(null)
+  const [loading, setLoading] = useState(true) // Đang kiểm tra session ban đầu
 
   /**
-   * Đăng nhập — kiểm tra username/password
+   * Lấy profile từ bảng public.profiles theo user id
+   */
+  const fetchProfile = useCallback(async (supabaseUser) => {
+    if (!supabaseUser) { setUser(null); return }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username, name, title, role, avatar')
+      .eq('id', supabaseUser.id)
+      .single()
+
+    setUser({
+      id:       supabaseUser.id,
+      email:    supabaseUser.email,
+      username: profile?.username ?? supabaseUser.email,
+      name:     profile?.name    ?? supabaseUser.email,
+      title:    profile?.title   ?? '',
+      role:     profile?.role    ?? 'viewer',
+      avatar:   profile?.avatar  ?? '?',
+    })
+  }, [])
+
+  // Kiểm tra session khi app khởi động + lắng nghe thay đổi auth
+  useEffect(() => {
+    // Lấy session hiện tại (nếu đã đăng nhập từ trước)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      fetchProfile(session?.user ?? null).finally(() => setLoading(false))
+    })
+
+    // Lắng nghe sự kiện: đăng nhập / đăng xuất / token refresh
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      fetchProfile(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [fetchProfile])
+
+  /**
+   * Đăng nhập bằng username + password
+   * Nội bộ map username → email rồi gọi Supabase
    * @returns {{ success: boolean, error?: string }}
    */
-  const login = useCallback((username, password) => {
-    const found = USERS.find(
-      (u) => u.username === username.trim() && u.password === password
-    )
+  const login = useCallback(async (username, password) => {
+    const email = USERNAME_TO_EMAIL[username.trim().toLowerCase()]
 
-    if (!found) {
+    if (!email) {
+      return { success: false, error: 'Tên đăng nhập không tồn tại' }
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
       return { success: false, error: 'Tên đăng nhập hoặc mật khẩu không đúng' }
     }
 
-    // Lưu vào state + localStorage (không lưu password)
-    const { password: _, ...safeUser } = found
-    setUser(safeUser)
-    localStorage.setItem('hanoiDashboardUser', JSON.stringify(safeUser))
     return { success: true }
   }, [])
 
   /**
-   * Đăng xuất
+   * Đăng xuất — Supabase xoá JWT khỏi localStorage tự động
    */
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut()
     setUser(null)
-    localStorage.removeItem('hanoiDashboardUser')
   }, [])
 
   /**
    * Kiểm tra quyền cụ thể
-   * @param {string} permission — tên quyền trong PERMISSIONS
    */
   const can = useCallback((permission) => {
     if (!user) return false
     return PERMISSIONS[user.role]?.[permission] ?? false
   }, [user])
 
-  const value = { user, login, logout, can, isLoggedIn: !!user }
+  const value = {
+    user,
+    login,
+    logout,
+    can,
+    isLoggedIn: !!user,
+    loading,
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
