@@ -1,0 +1,8 @@
+# Thống nhất line ending về LF trên mọi OS
+* text=auto eol=lf
+*.jsx text eol=lf
+*.js  text eol=lf
+*.css text eol=lf
+*.md  text eol=lf
+*.json text eol=lf
+*.html text eol=lf

@@ -1,0 +1,125 @@
+/* Import phải đặt trước @tailwind directives */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #F4F6F9;
+  color: #1a202c;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: #f1f5f9; }
+::-webkit-scrollbar-thumb  { background: #93c5fd; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #2E86C1; }
+
+/* ─── Page transition ───────────────────────────────────────────────────────── */
+
+.page-enter {
+  animation: pageIn 0.22s ease-out both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── KPI Card hover ────────────────────────────────────────────────────────── */
+
+.kpi-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(46, 134, 193, 0.12);
+}
+
+/* ─── Sidebar nav active indicator ─────────────────────────────────────────── */
+
+.nav-active-bar {
+  position: relative;
+}
+.nav-active-bar::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 60%;
+  background: #5DADE2;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ─── Leaflet tooltip override ──────────────────────────────────────────────── */
+
+.leaflet-tooltip {
+  background: rgba(27, 79, 114, 0.92) !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  padding: 5px 9px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+}
+.leaflet-tooltip::before { display: none !important; }
+
+/* ─── Table row hover ───────────────────────────────────────────────────────── */
+
+table tbody tr {
+  transition: background 0.1s;
+}
+
+/* ─── Chart container ───────────────────────────────────────────────────────── */
+
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+.recharts-default-tooltip {
+  border-radius: 8px !important;
+  border-color: #e2e8f0 !important;
+  font-size: 12px !important;
+}
+
+/* ─── Mobile responsive ─────────────────────────────────────────────────────── */
+
+/* Sidebar overlay trên màn nhỏ */
+.sidebar-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 30;
+  backdrop-filter: blur(2px);
+}
+
+/* ─── Alert animation ───────────────────────────────────────────────────────── */
+
+.alert-slide-in {
+  animation: alertSlide 0.3s ease-out both;
+}
+@keyframes alertSlide {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Loading skeleton ──────────────────────────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
