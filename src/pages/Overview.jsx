@@ -3,7 +3,7 @@ import KPICard from '../components/Cards/KPICard'
 import AlertCard from '../components/Cards/AlertCard'
 import LineChart from '../components/Charts/LineChart'
 import BarChart from '../components/Charts/BarChart'
-import { VISITOR_KPI, VISITOR_DATA_2025, VISITOR_COMPARISON } from '../data/visitors'
+import { VISITOR_KPI, VISITOR_DATA_2026, VISITOR_COMPARISON } from '../data/visitors'
 import { ACCOMMODATION_DATA } from '../data/accommodation'
 import { RECENT_FEEDBACKS } from '../data/feedback'
 import { getUpcomingEvents } from '../data/events'
@@ -46,7 +46,7 @@ function Overview() {
       {/* === KPI Cards (6 chỉ số) === */}
       <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
         <KPICard
-          title="Tổng lượt khách năm 2025"
+          title={`Lượt khách Q1 ${VISITOR_KPI.year} (T1–T3)`}
           value={formatVisitors(VISITOR_KPI.totalVisitors)}
           change={VISITOR_KPI.growthRate}
           index={0}
@@ -70,7 +70,7 @@ function Overview() {
           index={2}
           icon={TrendingUp}
           color="green"
-          subtitle="So với năm 2024"
+          subtitle={`So với Q1 ${VISITOR_KPI.year - 1}`}
         />
         <KPICard
           title="Công suất lưu trú TB"
@@ -104,10 +104,10 @@ function Overview() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         {/* Lượt khách 12 tháng — chiếm 2/3 */}
         <div className="xl:col-span-2 bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-          <h3 className="font-semibold text-gray-800 mb-1">Lượt khách theo tháng — 2025</h3>
-          <p className="text-xs text-gray-400 mb-4">Cao điểm: T2 (Tết), T10-T12 (Thu đông)</p>
+          <h3 className="font-semibold text-gray-800 mb-1">Lượt khách theo tháng — {VISITOR_KPI.year}</h3>
+          <p className="text-xs text-gray-400 mb-4">T1–T3: thực tế · T4–T12: dự báo · Cao điểm: T2 (Tết), T10–T12</p>
           <LineChart
-            data={VISITOR_DATA_2025}
+            data={VISITOR_DATA_2026}
             xKey="month"
             lines={[
               { key: 'Nội địa', name: 'Khách nội địa', color: '#2E86C1' },
@@ -153,13 +153,13 @@ function Overview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* So sánh cùng kỳ */}
         <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-          <h3 className="font-semibold text-gray-800 mb-4">So sánh cùng kỳ 2024–2025</h3>
+          <h3 className="font-semibold text-gray-800 mb-4">So sánh cùng kỳ {VISITOR_KPI.year - 1}–{VISITOR_KPI.year}</h3>
           <BarChart
             data={VISITOR_COMPARISON}
             xKey="month"
             bars={[
-              { key: 'Năm nay',   name: '2025', color: '#2E86C1' },
-              { key: 'Năm trước', name: '2024', color: '#BDC3C7' },
+              { key: 'Năm nay',   name: String(VISITOR_KPI.year),       color: '#2E86C1' },
+              { key: 'Năm trước', name: String(VISITOR_KPI.year - 1),   color: '#BDC3C7' },
             ]}
             height={220}
             formatter={(v) => formatVisitors(v)}

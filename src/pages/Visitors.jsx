@@ -4,13 +4,13 @@ import LineChart from '../components/Charts/LineChart'
 import BarChart from '../components/Charts/BarChart'
 import PieChart from '../components/Charts/PieChart'
 import Select from '../components/common/Select'
-import { VISITOR_DATA_2025, VISITOR_DATA_2024, VISITOR_KPI, VISITOR_COMPARISON, TOP_SOURCES } from '../data/visitors'
-import { generateWeeklyData, generateDailyData } from '../data/generators'
+import { VISITOR_DATA_2026, VISITOR_DATA_2025, VISITOR_KPI, VISITOR_COMPARISON, TOP_SOURCES } from '../data/visitors'
+import { generateWeeklyData, generateDailyData, CURRENT_YEAR } from '../data/generators'
 import { formatVisitors } from '../utils/formatters'
 import { Users, Globe, TrendingUp, UserCheck } from 'lucide-react'
 
 // Dữ liệu tuần và ngày (sinh một lần, ổn định)
-const WEEKLY_DATA = generateWeeklyData(2025)
+const WEEKLY_DATA = generateWeeklyData(CURRENT_YEAR)
 const DAILY_DATA  = generateDailyData()
 
 const VIEW_OPTIONS = [
@@ -20,8 +20,8 @@ const VIEW_OPTIONS = [
 ]
 
 const YEAR_OPTIONS = [
-  { value: 2025, label: '2025' },
-  { value: 2024, label: '2024' },
+  { value: CURRENT_YEAR,     label: `${CURRENT_YEAR} (T1–T3 thực tế)` },
+  { value: CURRENT_YEAR - 1, label: String(CURRENT_YEAR - 1) },
 ]
 
 /**
@@ -30,14 +30,14 @@ const YEAR_OPTIONS = [
  */
 function Visitors() {
   const [viewType, setViewType]     = useState('monthly')
-  const [selectedYear, setYear]     = useState(2025)
+  const [selectedYear, setYear]     = useState(CURRENT_YEAR)
   const [chartType, setChartType]   = useState('bar') // 'bar' | 'line'
 
   // Chọn dataset theo viewType và năm
   const chartData = useMemo(() => {
     if (viewType === 'daily')   return DAILY_DATA
     if (viewType === 'weekly')  return WEEKLY_DATA
-    return selectedYear === 2025 ? VISITOR_DATA_2025 : VISITOR_DATA_2024
+    return selectedYear === CURRENT_YEAR ? VISITOR_DATA_2026 : VISITOR_DATA_2025
   }, [viewType, selectedYear])
 
   // Key trục X tương ứng
@@ -58,7 +58,7 @@ function Visitors() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KPICard
-          title="Tổng lượt khách 2025"
+          title={`Lượt khách Q1 ${VISITOR_KPI.year} (T1–T3)`}
           value={formatVisitors(VISITOR_KPI.totalVisitors)}
           change={VISITOR_KPI.growthRate}
           icon={Users}
@@ -66,27 +66,27 @@ function Visitors() {
           subtitle={`Nội địa: ${formatVisitors(VISITOR_KPI.domesticVisitors)}`}
         />
         <KPICard
-          title="Khách quốc tế"
+          title="Khách quốc tế Q1"
           value={formatVisitors(VISITOR_KPI.internationalVisitors)}
           change={15.2}
           icon={Globe}
           color="green"
-          subtitle="Tăng mạnh sau COVID"
+          subtitle={`Q1 ${VISITOR_KPI.year}`}
         />
         <KPICard
-          title="Tăng trưởng so với 2024"
+          title={`Tăng trưởng so với Q1 ${VISITOR_KPI.year - 1}`}
           value={`+${VISITOR_KPI.growthRate}%`}
           change={VISITOR_KPI.growthRate}
           icon={TrendingUp}
           color="yellow"
         />
         <KPICard
-          title="Lượt khách tháng này"
-          value={formatVisitors(VISITOR_DATA_2025[2]['Tổng'])} // tháng 3
+          title="Lượt khách tháng 3"
+          value={formatVisitors(VISITOR_DATA_2026[2]['Tổng'])}
           change={8.5}
           icon={UserCheck}
           color="blue"
-          subtitle="Tháng 3/2025"
+          subtitle={`Tháng 3/${VISITOR_KPI.year}`}
         />
       </div>
 

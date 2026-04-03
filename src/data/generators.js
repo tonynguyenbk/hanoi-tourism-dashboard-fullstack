@@ -6,6 +6,10 @@
 // Hệ số mùa vụ theo tháng (1-12)
 export const SEASONAL_FACTORS = [1.3, 1.4, 1.0, 1.2, 0.7, 0.6, 0.65, 0.6, 0.85, 1.25, 1.3, 1.35]
 
+// Năm hiện tại và số tháng đã hoàn thành (dùng để phân biệt thực tế vs dự báo)
+export const CURRENT_YEAR        = 2026
+export const CURRENT_MONTH_INDEX = new Date().getMonth() // 0-indexed: tháng 4 = 3
+
 // Lượng khách cơ sở mỗi tháng (tổng ~28 triệu/năm)
 const BASE_MONTHLY_DOMESTIC       = 2_083_333  // 25 triệu / 12
 const BASE_MONTHLY_INTERNATIONAL  =   333_333  //  4 triệu / 12

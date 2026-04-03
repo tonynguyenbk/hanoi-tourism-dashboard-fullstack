@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Button from '../components/common/Button'
 import AlertCard from '../components/Cards/AlertCard'
 import { exportWeeklyReport, exportMonthlyReport } from '../utils/reportGenerator'
-import { VISITOR_KPI, VISITOR_DATA_2025 } from '../data/visitors'
+import { VISITOR_KPI, VISITOR_DATA_2026, VISITOR_DATA_2025 } from '../data/visitors'
 import { ACCOMMODATION_DATA } from '../data/accommodation'
 import { FEEDBACK_STATS } from '../data/feedback'
 import { formatVisitors } from '../utils/formatters'
@@ -24,11 +24,11 @@ const WEEK_OPTIONS = [
   { value: 'w11', label: 'Tuần 12 (17/3 – 23/3/2026)', visitors: Math.round(VISITOR_KPI.totalVisitors / 52 * 1.0) },
 ]
 
-// Dữ liệu các tháng
+// Dữ liệu các tháng — chỉ tháng đã hoàn thành (T1–T3/2026)
 const MONTH_OPTIONS = [
-  { value: 'm3',  label: 'Tháng 3/2026', monthIndex: 2 },
-  { value: 'm2',  label: 'Tháng 2/2026', monthIndex: 1 },
-  { value: 'm1',  label: 'Tháng 1/2026', monthIndex: 0 },
+  { value: 'm3', label: `Tháng 3/${VISITOR_KPI.year}`, monthIndex: 2 },
+  { value: 'm2', label: `Tháng 2/${VISITOR_KPI.year}`, monthIndex: 1 },
+  { value: 'm1', label: `Tháng 1/${VISITOR_KPI.year}`, monthIndex: 0 },
 ]
 
 /**
@@ -36,7 +36,7 @@ const MONTH_OPTIONS = [
  */
 function PreviewPanel({ type, weekOption, monthOption }) {
   const isWeekly = type === 'weekly'
-  const monthData = isWeekly ? null : VISITOR_DATA_2025[monthOption?.monthIndex ?? 2]
+  const monthData = isWeekly ? null : VISITOR_DATA_2026[monthOption?.monthIndex ?? 2]
   const weekVisitors = weekOption?.visitors ?? Math.round(VISITOR_KPI.totalVisitors / 52)
 
   const sections = isWeekly
@@ -151,7 +151,7 @@ function Reports() {
       setLastExported('weekly')
     } else {
       const m = selectedMonth
-      const mData = VISITOR_DATA_2025[m.monthIndex]
+      const mData = VISITOR_DATA_2026[m.monthIndex]
       const distRows = ACCOMMODATION_DATA.map((d) => [
         d.district, `${d.capacity}%`,
         d.totalRooms.toLocaleString('vi-VN'),
