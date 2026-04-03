@@ -6,9 +6,10 @@ import { VISITOR_KPI, VISITOR_DATA_2025 } from '../data/visitors'
 import { ACCOMMODATION_DATA } from '../data/accommodation'
 import { FEEDBACK_STATS } from '../data/feedback'
 import { formatVisitors } from '../utils/formatters'
+import { useAuth } from '../context/AuthContext'
 import {
   FileText, Download, Calendar, CheckCircle,
-  Clock, BarChart2, MessageSquare, Building2,
+  Clock, BarChart2, MessageSquare, Building2, Lock,
 } from 'lucide-react'
 
 // Tính công suất TB
@@ -109,6 +110,8 @@ function PreviewPanel({ type, weekOption, monthOption }) {
  * Reports — Module 6: Xuất báo cáo tuần/tháng
  */
 function Reports() {
+  const { can } = useAuth()
+  const canExport = can('canExportReport')
   const [loadingType, setLoadingType] = useState(null)
   const [selectedWeek,  setSelectedWeek]  = useState(WEEK_OPTIONS[0])
   const [selectedMonth, setSelectedMonth] = useState(MONTH_OPTIONS[0])
@@ -183,6 +186,19 @@ function Reports() {
 
   return (
     <div className="space-y-5">
+      {/* Thông báo không có quyền */}
+      {!canExport && (
+        <div className="flex items-start gap-3 px-4 py-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
+          <Lock size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Bạn không có quyền xuất báo cáo</p>
+            <p className="text-yellow-700 mt-0.5 text-xs">
+              Chức năng xuất PDF chỉ dành cho <span className="font-medium">Quản trị viên</span>. Bạn vẫn có thể xem thống kê và lịch sử bên dưới.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Thông báo xuất thành công */}
       {lastExported && (
         <AlertCard
@@ -250,8 +266,14 @@ function Reports() {
 
           <PreviewPanel type="weekly" weekOption={selectedWeek} />
 
-          <Button icon={Download} loading={loadingType === 'weekly'} onClick={() => doExport('weekly')} className="w-full justify-center mt-4">
-            Xuất báo cáo tuần (PDF)
+          <Button
+            icon={canExport ? Download : Lock}
+            loading={loadingType === 'weekly'}
+            onClick={() => doExport('weekly')}
+            disabled={!canExport}
+            className="w-full justify-center mt-4"
+          >
+            {canExport ? 'Xuất báo cáo tuần (PDF)' : 'Không có quyền xuất'}
           </Button>
         </div>
 
@@ -288,8 +310,15 @@ function Reports() {
 
           <PreviewPanel type="monthly" monthOption={selectedMonth} />
 
-          <Button icon={Download} variant="secondary" loading={loadingType === 'monthly'} onClick={() => doExport('monthly')} className="w-full justify-center mt-4">
-            Xuất báo cáo tháng (PDF)
+          <Button
+            icon={canExport ? Download : Lock}
+            variant="secondary"
+            loading={loadingType === 'monthly'}
+            onClick={() => doExport('monthly')}
+            disabled={!canExport}
+            className="w-full justify-center mt-4"
+          >
+            {canExport ? 'Xuất báo cáo tháng (PDF)' : 'Không có quyền xuất'}
           </Button>
         </div>
       </div>
